@@ -1,0 +1,49 @@
+# The following is 'name' of 'workflow'
+name: CI with 'make' on 'windows-latest'
+
+# This ('make.yml') 'workflow' shall launch 'make' on each 'git push'
+
+on:
+  push:
+    branches: [ main ]
+
+# multiple 'jobs' are permitted and will be executed in parallel to each other
+jobs:
+
+  # this ('job_to_make_on_windows-latest') is arbitrary name for the following 'job'
+  job_to_make_on_windows-latest:
+
+    # shall be executed on 'windows-latest'
+    runs-on: windows-latest
+
+    steps:
+    # 'check out' git repository contents
+    - uses: actions/checkout@v3
+
+    # Install 'Qt SDK'
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: '5.15.2'
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_msvc2019_64'
+        dir: '${{ github.workspace }}/example/'
+        install-deps: 'true'
+        modules: 'qtcharts qtwebengine'
+        cached: 'false'
+        setup-python: 'true'
+        tools: 'tools_ifw tools_qtcreator,qt.tools.qtcreator'
+        set-env: 'false'
+        tools-only: 'false'
+        aqtversion: '==2.0.0'
+        py7zrversion: '==0.16.1'
+        extra: '--external 7z'
+
+    # launch 'make'
+    - name: Make
+      run: make
+
+    # launch built binary to 'ckeck' it
+    - name: Check
+      run: make check
